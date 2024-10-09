@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Horas com Valor Customizado</title>
+    <script>
+        // Função para calcular os valores
+        function calcularAutomatico() {
+            let design = parseFloat(document.getElementById("design").value) || 0;
+            let desenvolvimento = parseFloat(document.getElementById("desenvolvimento").value) || 0;
+            let valorPorHora = parseFloat(document.getElementById("valorHora").value) || 0;
+
+            // Calcula QA e Gerência
+            let qa = desenvolvimento * 0.15;
+            document.getElementById("qa").value = qa.toFixed(2);
+            let gerencia = (design + desenvolvimento + qa) * 0.10;
+            document.getElementById("gerencia").value = gerencia.toFixed(2);
+
+            // Calcula o total de horas
+            let totalHoras = design + desenvolvimento + qa + gerencia;
+            document.getElementById("totalHoras").value = totalHoras.toFixed(2);
+
+            // Calcula o resultado final com base no valor inserido
+            let resultadoFinal = totalHoras * valorPorHora;
+            document.getElementById("resultado").value = resultadoFinal.toFixed(2);
+        }
+
+        // Função para salvar os dados no localStorage e exportar automaticamente
+        function salvarDados() {
+            let nomeCliente = document.getElementById("nomeCliente").value;
+            let design = parseFloat(document.getElementById("design").value) || 0;
+            let desenvolvimento = parseFloat(document.getElementById("desenvolvimento").value) || 0;
+            let qa = parseFloat(document.getElementById("qa").value) || 0;
+            let gerencia = parseFloat(document.getElementById("gerencia").value) || 0;
+            let totalHoras = parseFloat(document.getElementById("totalHoras").value) || 0;
+            let valorPorHora = parseFloat(document.getElementById("valorHora").value) || 0;
+            let resultado = parseFloat(document.getElementById("resultado").value) || 0;
+
+            if (nomeCliente) {
+                // Armazena os dados como um objeto
+                let dadosCliente = {
+                    nome: nomeCliente,
+                    design: design,
+                    desenvolvimento: desenvolvimento,
+                    qa: qa,
+                    gerencia: gerencia,
+                    totalHoras: totalHoras,
+                    valorPorHora: valorPorHora,
+                    resultado: resultado
+                };
+
+                // Recupera dados existentes e adiciona o novo cliente
+                let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+                clientes.push(dadosCliente);
+                localStorage.setItem('clientes', JSON.stringify(clientes));
+
+                // Atualiza a lista de clientes
+                atualizarListaClientes();
+
+                // Exporta automaticamente os dados após salvar
+                exportarDados();
+            } else {
+                alert("Por favor, insira o nome do cliente.");
+            }
+        }
+
+        // Função para atualizar a lista de clientes na tela
+        function atualizarListaClientes() {
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            let lista = document.getElementById("listaClientes");
+            lista.innerHTML = "";
+
+            clientes.forEach(function(cliente, index) {
+                let item = document.createElement("li");
+                item.textContent = `${cliente.nome} - Total Horas: ${cliente.totalHoras.toFixed(2)}h - Valor/Hora: R$ ${cliente.valorPorHora.toFixed(2)} - Resultado: R$ ${cliente.resultado.toFixed(2)}`;
+                lista.appendChild(item);
+            });
+        }
+
+        // Função para exportar os dados como CSV
+        function exportarDados() {
+            let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
+            if (clientes.length === 0) {
+                alert("Nenhum dado para exportar.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Nome,Design,Desenvolvimento,QA,Gerência,Total Horas,Valor por Hora,Resultado\n"; // Cabeçalho do CSV
+
+            clientes.forEach(function(cliente) {
+                let linha = `${cliente.nome},${cliente.design},${cliente.desenvolvimento},${cliente.qa},${cliente.gerencia},${cliente.totalHoras},${cliente.valorPorHora},${cliente.resultado}`;
+                csvContent += linha + "\n";
+            });
+
+            // Cria um link para download do CSV
+            let encodedUri = encodeURI(csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "dados_clientes.csv");
+            document.body.appendChild(link);
+
+            link.click(); // Simula o clique no link para download do arquivo CSV
+            document.body.removeChild(link);
+        }
+
+        // Chama a função para atualizar a lista ao carregar a página
+        window.onload = function() {
+            atualizarListaClientes();
+        }
+    </script>
+</head>
+<body>
+    <h1>Cálculo de Horas e Custos</h1>
+
+    <label for="nomeCliente">Nome do Cliente:</label>
+    <input type="text" id="nomeCliente" name="nomeCliente"><br><br>
+
+    <label for="design">Horas de Design:</label>
+    <input type="number" id="design" name="design" step="0.01" oninput="calcularAutomatico()"><br><br>
+
+    <label for="desenvolvimento">Horas de Desenvolvimento:</label>
+    <input type="number" id="desenvolvimento" name="desenvolvimento" step="0.01" oninput="calcularAutomatico()"><br><br>
+
+    <label for="qa">Horas de QA (15% de Desenvolvimento):</label>
+    <input type="number" id="qa" name="qa" readonly><br><br>
+
+    <label for="gerencia">Horas de Gerência (10% do Total):</label>
+    <input type="number" id="gerencia" name="gerencia" readonly><br><br>
+
+    <label for="totalHoras">Total de Horas:</label>
+    <input type="number" id="totalHoras" name="totalHoras" readonly><br><br>
+
+    <label for="valorHora">Valor por Hora (R$):</label>
+    <input type="number" id="valorHora" name="valorHora" step="0.01" oninput="calcularAutomatico()"><br><br>
+
+    <label for="resultado">Resultado Final (R$):</label>
+    <input type="number" id="resultado" name="resultado" readonly><br><br>
+
+    <button onclick="salvarDados()">Salvar Dados</button>
+
+    <h2>Lista de Clientes Salvos</h2>
+    <ul id="listaClientes"></ul>
+</body>
+</html>
