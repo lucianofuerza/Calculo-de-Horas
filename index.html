@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculo de Horas com Valor Customizado</title>
+    <title>Cálculo de Horas com Recuperação de Dados</title>
     <script>
         // Função para calcular os valores
         function calcularAutomatico() {
@@ -57,9 +57,6 @@
 
                 // Atualiza a lista de clientes
                 atualizarListaClientes();
-
-                // Exporta automaticamente os dados após salvar
-                exportarDados();
             } else {
                 alert("Por favor, insira o nome do cliente.");
             }
@@ -73,36 +70,33 @@
 
             clientes.forEach(function(cliente, index) {
                 let item = document.createElement("li");
-                item.textContent = `${cliente.nome} - Total Horas: ${cliente.totalHoras.toFixed(2)}h - Valor/Hora: R$ ${cliente.valorPorHora.toFixed(2)} - Resultado: R$ ${cliente.resultado.toFixed(2)}`;
+                let link = document.createElement("a");
+                link.href = "#";
+                link.textContent = `${cliente.nome} - Total Horas: ${cliente.totalHoras.toFixed(2)}h - Valor/Hora: R$ ${cliente.valorPorHora.toFixed(2)} - Resultado: R$ ${cliente.resultado.toFixed(2)}`;
+
+                // Adiciona evento para recuperar dados ao clicar no link
+                link.onclick = function() {
+                    recuperarDados(index);
+                };
+
+                item.appendChild(link);
                 lista.appendChild(item);
             });
         }
 
-        // Função para exportar os dados como CSV
-        function exportarDados() {
+        // Função para recuperar os dados do cliente e preencher os campos
+        function recuperarDados(index) {
             let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
-            if (clientes.length === 0) {
-                alert("Nenhum dado para exportar.");
-                return;
-            }
+            let cliente = clientes[index];
 
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Nome,Design,Desenvolvimento,QA,Gerência,Total Horas,Valor por Hora,Resultado\n"; // Cabeçalho do CSV
-
-            clientes.forEach(function(cliente) {
-                let linha = `${cliente.nome},${cliente.design},${cliente.desenvolvimento},${cliente.qa},${cliente.gerencia},${cliente.totalHoras},${cliente.valorPorHora},${cliente.resultado}`;
-                csvContent += linha + "\n";
-            });
-
-            // Cria um link para download do CSV
-            let encodedUri = encodeURI(csvContent);
-            let link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "dados_clientes.csv");
-            document.body.appendChild(link);
-
-            link.click(); // Simula o clique no link para download do arquivo CSV
-            document.body.removeChild(link);
+            document.getElementById("nomeCliente").value = cliente.nome;
+            document.getElementById("design").value = cliente.design;
+            document.getElementById("desenvolvimento").value = cliente.desenvolvimento;
+            document.getElementById("qa").value = cliente.qa;
+            document.getElementById("gerencia").value = cliente.gerencia;
+            document.getElementById("totalHoras").value = cliente.totalHoras;
+            document.getElementById("valorHora").value = cliente.valorPorHora;
+            document.getElementById("resultado").value = cliente.resultado;
         }
 
         // Chama a função para atualizar a lista ao carregar a página
